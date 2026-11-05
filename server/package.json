@@ -1,0 +1,52 @@
+{
+  "name": "workspace-server",
+  "version": "1.0.0",
+  "description": "Backend API server for WorkSpace",
+  "main": "dist/server.js",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "typecheck": "tsc --noEmit",
+    "seed:admin": "tsx src/scripts/seedAdmin.ts",
+    "admin:sync-credentials": "tsx src/scripts/syncAdminCredentials.ts",
+    "seed:demo": "tsx src/scripts/seedDemo.ts",
+    "verify:demo": "tsx src/scripts/verifyDemo.ts",
+    "test": "tsx src/tests/verifyPhase2.ts",
+    "test:phase3": "tsx src/tests/verifyPhase3.ts",
+    "test:phase4": "tsx src/tests/verifyPhase4.ts",
+    "test:phase5": "tsx src/tests/verifyPhase5.ts",
+    "test:phase6": "tsx src/tests/verifyPhase6.ts",
+    "test:phase7": "tsx src/tests/verifyPhase7.ts",
+    "test:managers": "tsx src/tests/verifyEligibleManagers.ts",
+    "test:isolation": "tsx src/tests/verifyDatabaseIsolation.ts",
+    "test:security": "tsx src/tests/verifySecurityHardening.ts",
+    "test:authz": "tsx src/tests/verifyAuthorizationSecurity.ts",
+    "test:validation": "tsx src/tests/verifyInputValidationSecurity.ts",
+    "test:concurrency": "tsx src/tests/verifyConcurrencySecurity.ts",
+    "test:socket-security": "tsx src/tests/verifySocketSecurity.ts",
+    "test:integration": "tsx src/tests/verifyIntegrationWorkflows.ts"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "express-rate-limit": "^8.7.3",
+    "helmet": "^8.3.0",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.11.4",
+    "socket.io": "^4.8.4",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.0",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^22.10.2",
+    "socket.io-client": "^4.8.4",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}
