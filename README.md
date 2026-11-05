@@ -122,7 +122,7 @@ sequenceDiagram
     Member->>Member: 6. Moves assigned task to In Progress / Testing
     Member->>PM: 7. Collaborates via Task Comments and Group Chat
     PM->>Admin: 8. PM discusses roadmap with Admin via private direct message
-    Member->>PM: 9. Task marked Done; audit log recorded & metrics updated
+    Member->>PM: 9. Task marked Done, audit log recorded & metrics updated
 ```
 
 ---
