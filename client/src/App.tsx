@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { RouterProvider, useRouter, AppRoute } from './context/RouterContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { LandingPage } from './pages/LandingPage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
+import { NotFoundPage } from './pages/NotFoundPage';
 import { AppShell } from './components/layout/AppShell';
 import { NavigationItem } from './components/layout/Sidebar';
 import { DashboardPage } from './pages/DashboardPage';
@@ -25,6 +27,9 @@ import { getToken } from './lib/api';
 function AppContent() {
   const { user, isLoading, isAuthenticated, logout, networkError } = useAuth();
   const { currentPath, navigate } = useRouter();
+
+  // Search Filter State (propagated across dashboard and header)
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Notifications State (Synchronized with Backend API and Socket.IO)
   const [notifications, setNotifications] = useState<NotificationResponse[]>([]);
@@ -99,20 +104,17 @@ function AppContent() {
     if (isLoading) return;
 
     if (!isAuthenticated) {
-      // Unauthenticated users can only view /login or /register
-      if (currentPath !== '/login' && currentPath !== '/register') {
-        // If unauthenticated user opens an invitation link, remember token across login
-        if (currentPath.startsWith('/invite')) {
-          const params = new URLSearchParams(window.location.search);
-          const inviteToken = params.get('token');
-          if (inviteToken) {
-            sessionStorage.setItem('workspace_pending_invite_token', inviteToken);
-          }
+      // If unauthenticated user opens an invitation link, remember token across login
+      if (currentPath.startsWith('/invite')) {
+        const params = new URLSearchParams(window.location.search);
+        const inviteToken = params.get('token');
+        if (inviteToken) {
+          sessionStorage.setItem('workspace_pending_invite_token', inviteToken);
         }
         navigate('/login', { replace: true });
       }
     } else {
-      // Authenticated users accessing auth forms or root are redirected to /dashboard or pending invite
+      // Authenticated users accessing auth forms or landing page are redirected to /dashboard or pending invite
       if (currentPath === '/login' || currentPath === '/register' || currentPath === '/') {
         const pendingToken = sessionStorage.getItem('workspace_pending_invite_token');
         if (pendingToken) {
@@ -153,6 +155,17 @@ function AppContent() {
   const currentTab = (queryParams.get('tab') as any) || (currentTaskId ? 'KANBAN' : 'OVERVIEW');
   const isInviteRoute = currentPath.startsWith('/invite');
 
+  // Check if current authenticated route is a recognized application path
+  const isKnownRoute =
+    isInviteRoute ||
+    (isProjectDetailsRoute && !!currentProjectId) ||
+    currentPath === '/dashboard' ||
+    currentPath === '/projects' ||
+    currentPath === '/tasks' ||
+    currentPath === '/chat' ||
+    currentPath === '/notifications' ||
+    currentPath === '/activity';
+
   // 1. Loading State (Full Screen Branded Screen)
   if (isLoading) {
     return (
@@ -169,8 +182,16 @@ function AppContent() {
     );
   }
 
-  // 2. Unauthenticated State (Public Routes Only)
+  // 2. Unauthenticated State (Public Routes & Landing Page)
   if (!isAuthenticated || !user) {
+    if (currentPath === '/') {
+      return (
+        <>
+          <ToastContainer toasts={toasts} onDismiss={handleDismissToast} />
+          <LandingPage />
+        </>
+      );
+    }
     if (currentPath === '/register') {
       return (
         <>
@@ -179,10 +200,18 @@ function AppContent() {
         </>
       );
     }
+    if (currentPath === '/login') {
+      return (
+        <>
+          <ToastContainer toasts={toasts} onDismiss={handleDismissToast} />
+          <LoginPage onTriggerToast={triggerToast} onClearToasts={() => setToasts([])} />
+        </>
+      );
+    }
     return (
       <>
         <ToastContainer toasts={toasts} onDismiss={handleDismissToast} />
-        <LoginPage onTriggerToast={triggerToast} onClearToasts={() => setToasts([])} />
+        <NotFoundPage standalone />
       </>
     );
   }
@@ -263,12 +292,15 @@ function AppContent() {
         onMarkAllNotificationsRead={handleMarkAllNotificationsRead}
         onNavigateToLink={handleNavigateToLink}
         onViewAllNotifications={() => navigate('/notifications')}
-        searchQuery=""
-        onSearchChange={() => {}}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
         onTriggerToast={triggerToast}
       >
-        {/* View: Invitation Acceptance Route (/invite?token=...) */}
-        {isInviteRoute ? (
+        {!isKnownRoute ? (
+          /* View: 404 Route Not Found */
+          <NotFoundPage />
+        ) : isInviteRoute ? (
+          /* View: Invitation Acceptance Route (/invite?token=...) */
           <InviteAcceptancePage
             currentUser={user}
             onNavigateToProject={(projId) => navigate(`/projects/${projId}`)}
@@ -298,10 +330,11 @@ function AppContent() {
           /* View 1: Executive Operations Dashboard */
           <DashboardPage
             currentUser={user}
-            searchQuery=""
-            onClearSearch={() => {}}
+            searchQuery={searchQuery}
+            onClearSearch={() => setSearchQuery('')}
             onNavigateToProjects={() => handleSelectNav('projects')}
             onNavigateToTasks={() => handleSelectNav('tasks')}
+            onNavigateToActivity={() => handleSelectNav('activity')}
             onNavigateToProject={(projId) => navigate(`/projects/${projId}`)}
             onNavigateToTask={(projId, taskId) =>
               navigate(`/projects/${projId}?tab=kanban&taskId=${taskId}`)

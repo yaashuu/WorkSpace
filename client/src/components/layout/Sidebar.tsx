@@ -85,7 +85,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
       )}
     >
       {/* Brand Header */}
-      <div className="h-16 px-5 flex items-center gap-3 border-b border-sidebar-border/30">
+      <div
+        onClick={() => onSelect('dashboard')}
+        className="h-16 px-5 flex items-center gap-3 border-b border-sidebar-border/30 cursor-pointer hover:bg-sidebar-hover/40 transition-colors"
+        title="Go to Operations Dashboard"
+      >
         <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary-hover flex items-center justify-center text-white shadow-xs">
           <Layers className="w-4.5 h-4.5" />
         </div>

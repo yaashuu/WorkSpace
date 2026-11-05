@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
 export type AppRoute =
+  | '/'
   | '/login'
   | '/register'
   | '/dashboard'
